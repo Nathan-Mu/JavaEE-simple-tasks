@@ -1,0 +1,73 @@
+
+<!-- Dongyu Zhao 27356094-->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:head>
+
+        <title>
+            FIT5042 Week 3B - Home
+        </title>
+        <h:outputStylesheet name="css/style.css" />
+    </h:head>
+    <h:body>
+        <!-- Start Header -->
+        <header>
+            <h1>
+                Introduction to JavaServer Faces
+            </h1>
+        </header>
+        <!-- End Header -->
+        <!-- Start Article -->
+        <article>
+            <h2>
+                Enter your details
+            </h2>
+            <p>
+                Tell us a bit about yourself!
+            </p>
+            <hr/>
+            <!-- Form -->
+            <h:form>
+                <!-- Name input -->
+                <p>
+                    Your name:
+                    <h:message for="personName" styleClass="error">
+                    </h:message>
+                </p>
+                <h:inputText id="personName" label="Name" required="true" requiredMessage="You must enter a name!"
+                             size="32" value="#{personBean.name}"> </h:inputText>
+                <!-- Age input -->
+                <p>
+                    Your age:
+                    <h:message for="personAge" styleClass="error">
+                    </h:message>
+                </p>
+                <h:inputText id="personAge" label="Age" maxlength="2" required="true" requiredMessage="You must
+                             enter your age!" size="2" value="#{personBean.age}">
+                    <f:validateLongRange maximum="100" minimum="18"/> </h:inputText>
+                <!-- Message input -->
+                <p>
+                    Write a message:
+                    <h:message for="personMessage" styleClass="error">
+                    </h:message>
+                </p>
+                <h:inputTextarea id="personMessage" label="Message" required="true" requiredMessage="You must
+                                 enter a message!" value="#{personBean.message}"> </h:inputTextarea>
+                <!-- Form submit button -->
+                <h:commandButton action="response" id="submit" value="Submit"></h:commandButton>
+            </h:form>
+            <!-- End Form -->
+        </article>
+        <!-- End Article -->
+        <!-- Start Footer -->
+        <footer>
+            <p>
+                This project created by Dongyu Zhao
+            </p>
+        </footer>
+        <!-- End Footer -->
+    </h:body>
+</html>
+

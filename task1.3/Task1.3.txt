@@ -1,0 +1,373 @@
+//RealEstateAgencyPresenter.java
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package fit5042.tutex;
+
+import fit5042.tutex.gui.RealEstateAgencyGUI;
+import fit5042.tutex.gui.SimpleGUIImpl;
+import fit5042.tutex.repository.PropertyRepository;
+import fit5042.tutex.repository.PropertyRepositoryFactory;
+import fit5042.tutex.repository.entities.Property;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
+import javax.swing.SwingUtilities;
+
+/**
+ *
+ * @author Dongyu Zhao 27356094
+ */
+public class RealEstateAgencyPresenter implements ActionListener {
+
+    //declare attributes
+    private String name;
+    private final PropertyRepository propertyRepository;
+    private RealEstateAgencyGUI gui;
+
+    //constructor
+    public RealEstateAgencyPresenter(String name) throws Exception {
+        this.name = name;
+        this.propertyRepository = PropertyRepositoryFactory.getInstance();
+    }
+    
+    //main method (open the UI)
+    public static void main(String[] args) {
+        try {
+            //set name
+            RealEstateAgencyPresenter presenter = new RealEstateAgencyPresenter("Monash Real Estate Agency");
+            //reset and open the UI
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    presenter.init();
+                }
+            });
+        } catch (Exception ex) {
+            System.out.println("Failed to run application: " + ex.getMessage());
+        }
+    }
+
+    //init UI
+    public void init() {
+        this.gui = new SimpleGUIImpl(this);
+    }
+
+    //the system will perform different action depends on which button user clicks
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        if (event.getSource() == gui.getViewButton()) {
+            this.displayAllProperties();
+        } else if (event.getSource() == gui.getAddButton()) {
+            this.addProperty();
+        } else if (event.getSource() == gui.getSearchButton()) {
+            this.searchPropertyById();
+        } else {
+            System.exit(0);
+        }
+    }
+
+    //the action that user clicks search button
+    public void searchPropertyById() {
+        //read user input
+        int id = gui.getPropertyId();
+        try {
+            //search the property
+            Property property = propertyRepository.searchPropertyById(id);
+            //display the property. if not exists. show the error.
+            if (property != null) {
+                gui.displayPropertyDetails(property);
+            } else {
+                gui.displayPopUpMessage("Property not found");
+            }
+        //catch the other exceptions like user invalid input
+        } catch (Exception ex) {
+            this.gui.displayPopUpMessage("Failed to search property by ID: " + ex.getMessage());
+        }
+    }
+
+    //display all properties recorded
+    private void displayAllProperties() {
+        try {
+            //read all properties
+            List<Property> properties = propertyRepository.getAllProperties();
+            //display all properties, if no properies in the system, show the error
+            if (properties != null && !properties.isEmpty()) {
+                this.gui.displayPropertyDetails(properties);
+            } else {
+                gui.displayPopUpMessage("No properties in the system");
+            }
+        //catch other exception
+        } catch (Exception ex) {
+            gui.displayPopUpMessage("Failed to display properties: " + ex.getMessage());
+        }
+    }
+
+    //add a property depends on user input
+    private void addProperty() {
+        try {
+            //read the new property from user input
+            Property property = gui.getPropertyDetails();
+            //add the property
+            propertyRepository.addProperty(property);
+            //show all properties (init the part of UI)
+            displayAllProperties();
+        } catch (Exception ex) {
+            gui.displayPopUpMessage("Failed to add property: " + ex.getMessage());
+        }
+        //clear the text field
+        gui.clearTextFields();
+    }
+}
+
+
+
+
+
+//SimpleGUIImpl.java
+
+package fit5042.tutex.gui;
+
+import fit5042.tutex.repository.entities.Property;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.GridLayout;
+import java.awt.event.ActionListener;
+import java.math.BigDecimal;
+import java.util.List;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+/**
+ *
+ * @author Dongyu Zhao 27356094
+ */
+public class SimpleGUIImpl extends JFrame implements RealEstateAgencyGUI {
+
+    //declare attribute
+    //pannels
+    private final JPanel userInputPanel;
+    private final JPanel buttonPanel;
+    //labels
+    private final JLabel idLabel;
+    private final JLabel addressLabel;
+    private final JLabel numberLabel;
+    private final JLabel sizeLabel;
+    private final JLabel priceLabel;
+    //text fields
+    private final JTextField idField;
+    private final JTextField addressField;
+    private final JTextField numberField;
+    private final JTextField sizeField;
+    private final JTextField priceField;
+    //text area
+    private final JTextArea displayArea;
+    //button 
+    private final JButton viewBtn;
+    private final JButton searchBtn;
+    private final JButton insertBtn;
+    private final JButton closeBtn;
+    
+    //constructor
+    public SimpleGUIImpl(ActionListener actionListener) {
+        //set name
+        super("Monash Real Estate Agency");
+        
+        //create a new container
+        Container container = this.getContentPane();
+        
+        //create panels
+        this.userInputPanel = new JPanel();
+        this.buttonPanel = new JPanel();
+        
+        //create labels
+        this.idLabel = new JLabel("ID: ");
+        this.addressLabel = new JLabel("Address: ");
+        this.numberLabel = new JLabel("Number of Bedroom(s): ");
+        this.sizeLabel = new JLabel("Size: ");
+        this.priceLabel = new JLabel("Price: ");
+        
+        //create text fields
+        this.idField = new JTextField();
+        this.addressField = new JTextField();
+        this.numberField = new JTextField();
+        this.sizeField = new JTextField();
+        this.priceField = new JTextField();
+        
+        //create text area
+        this.displayArea = new JTextArea();
+        displayArea.setEditable(false);
+        
+        //create buttons
+        this.viewBtn = new JButton("View");
+        this.searchBtn = new JButton("Search");
+        this.insertBtn = new JButton("Insert");
+        this.closeBtn = new JButton("Close");
+        
+        //set the layout of container
+        container.setLayout(new BorderLayout());
+        //set the layout of panels
+        //user input panel contains 5 rows and 2 columns
+        this.userInputPanel.setLayout(new GridLayout(5, 2));
+        //button panel contains 1 rows and 4 columns
+        this.buttonPanel.setLayout(new GridLayout(1, 4));
+        
+        //set action listeners to buttons
+        this.viewBtn.addActionListener(actionListener);
+        this.searchBtn.addActionListener(actionListener);
+        this.insertBtn.addActionListener(actionListener);
+        this.closeBtn.addActionListener(actionListener);
+        
+        //add labels and text fields into user input panel
+        this.userInputPanel.add(idLabel);
+        this.userInputPanel.add(idField);
+        this.userInputPanel.add(addressLabel);
+        this.userInputPanel.add(addressField);
+        this.userInputPanel.add(numberLabel);
+        this.userInputPanel.add(numberField);
+        this.userInputPanel.add(sizeLabel);
+        this.userInputPanel.add(sizeField);
+        this.userInputPanel.add(priceLabel);
+        this.userInputPanel.add(priceField);
+        
+        //add buttons into button panel
+        this.buttonPanel.add(viewBtn);
+        this.buttonPanel.add(searchBtn);
+        this.buttonPanel.add(insertBtn);
+        this.buttonPanel.add(closeBtn);
+        
+        //add the two panels and text area which is added into a scroll pane into container
+        container.add(userInputPanel, BorderLayout.NORTH);
+        container.add(new JScrollPane(this.displayArea), BorderLayout.CENTER);
+        container.add(buttonPanel, BorderLayout.SOUTH);
+        
+        //set default close option
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
+        //set the size of the window
+        this.setSize(600, 600);
+        //make the window visible
+        this.setVisible(true);
+    }
+
+    //clear (reset) the text fields
+    @Override
+    public void clearTextFields() {
+        //set empty text to the text fields
+        idField.setText("");
+        addressField.setText("");
+        numberField.setText("");
+        sizeField.setText("");
+        priceField.setText("");
+    }
+
+    //display a pop up window which shows message
+    @Override
+    public void displayPopUpMessage(String message) {
+        JOptionPane.showMessageDialog(this, message);
+    }
+
+    //display the details of a property
+    @Override
+    public void displayPropertyDetails(Property property) {
+        displayArea.setText(property.toString());}
+
+    //display the details of all property
+    @Override
+    public void displayPropertyDetails(List<Property> properties) {
+        String string = "";
+        //combine the details of each property into one text
+        //\n means to start a new line
+        for (Property p: properties) {
+            string += p.toString() + "\n";
+        }
+        displayArea.setText(string);
+    }
+
+    //get insert button
+    @Override
+    public JButton getAddButton() {
+        return insertBtn;
+    }
+
+    //get close button
+    @Override
+    public JButton getCloseButton() {
+        return closeBtn;
+    }
+
+    //get search button
+    @Override
+    public JButton getSearchButton() {
+        return searchBtn;
+    }
+
+    //get view button
+    @Override
+    public JButton getViewButton() {
+        return viewBtn;
+    }
+
+    //get user input
+    @Override
+    public Property getPropertyDetails() {
+        //get user input respectively
+        String idStr = idField.getText().trim();
+        String address = addressField.getText().trim();
+        String numberStr = numberField.getText().trim();
+        String sizeStr = sizeField.getText().trim();
+        String priceStr = priceField.getText().trim();
+        //validate user input
+        if (!isNumeric(idStr) || !isNumeric(numberStr) || !isNumeric(sizeStr) || !isBigDecimal(priceStr) || address.isEmpty()) {
+            //id, number of bedrooms, size and price must be a number
+            throw new UnsupportedOperationException("Invalid input");
+        } else if (Integer.valueOf(idStr) == 0 || Integer.valueOf(numberStr) == 0 || Integer.valueOf(sizeStr) == 0 || Double.valueOf(priceStr) == 0) {
+            //the value of number cannot be 0
+            throw new UnsupportedOperationException("Value cannot be 0");
+        } else {
+            //create new property
+            Property property = new Property(Integer.valueOf(idStr), address, Integer.valueOf(numberStr), 
+                    Integer.valueOf(sizeStr), BigDecimal.valueOf(Double.valueOf(priceStr)));
+            return property;
+        }
+    }
+
+    //read property id from user input (search function)
+    @Override
+    public int getPropertyId() {
+        //read user input
+        String idStr = idField.getText();
+        //validate user input
+        if (!isNumeric(idStr)) {
+            //the input must be a number
+            throw new UnsupportedOperationException("Invalid input");
+        } else if (Integer.valueOf(idStr) == 0) {
+            //the number cannot be 0
+            throw new UnsupportedOperationException("Property ID cannot be 0");
+        } else {
+            return Integer.valueOf(idStr);
+        }
+    }
+    
+    //return true when the string only contains number
+    public static boolean isNumeric(String string) {
+        return string.matches("[0-9]+");
+    }
+    
+    //return true when the string only contains one bigdecimal
+    public static boolean isBigDecimal(String string) {
+        return string.matches("[0-9]+[.]?[0-9]*");
+    }
+    
+    
+}
+
